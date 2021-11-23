@@ -1,5 +1,3 @@
-#! /usr/bin/python3
-
 import argparse
 import sys
 import praw
@@ -11,8 +9,7 @@ import errno
 
 # Initialize reddit using your credentials:
 # http://www.storybench.org/how-to-scrape-reddit-with-python/
-reddit = praw.Reddit("scraperr")
-
+reddit = praw.Reddit("funky")
 parser = argparse.ArgumentParser()
 
 subredditArgHelp = 'The subreddit from which you wish to download the pictures'
@@ -22,22 +19,22 @@ periodArgHelp = ("The period from when to "
                  " month, year, all")
 directoryArgHelp = ('The directory for the pictures'
                     'to be downloaded into (default: reddit-wallpapers/)')
+searchtermArgHelp = 'search term for subreddit'
 
 parser.add_argument('subreddit', help=subredditArgHelp, action='store')
-parser.add_argument('-l', '--limit', default=10, help=limitArgHelp,
-                    type=int, action='store')
-parser.add_argument('-p', '--period', default='day', help=periodArgHelp,
-                    action='store')
-parser.add_argument('-d', '--directory', default='reddit-wallpapers/',
-                    help=directoryArgHelp, action='store')
-
+parser.add_argument('searchterm',help=searchtermArgHelp,action='store')
+parser.add_argument('-l', '--limit',     default=10, help=limitArgHelp,type=int, action='store')
+parser.add_argument('-d', '--directory', default='downloads/',help=directoryArgHelp, action='store')
 args = parser.parse_args()
 
-hot_subreddit = reddit.subreddit(args.subreddit).top(args.period,
-                                                     limit=args.limit)
+target_posts = reddit.subreddit(args.subreddit).search(args.searchterm, 'top', 'all')
 
 try:
-    url = [post.url for post in hot_subreddit]
+    url=[]
+    for post in target_posts:
+        if 'jpg' in post.url:
+            url.append( [post.score,post.title,post.url] )
+
 except prawcore.ResponseException:
     print('An error occurred during authorisation. Please check that'
           'your Reddit app credentials are set correctly and try again.')
@@ -88,6 +85,7 @@ def download_urls():
     p.stdin.close()
     p.wait()
 
+    print(len(url))
 
 if __name__ == "__main__":
     main()
