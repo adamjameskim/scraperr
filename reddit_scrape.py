@@ -24,13 +24,13 @@ searchtermArgHelp = 'search term for subreddit'
 parser.add_argument('subreddit', help=subredditArgHelp, action='store')
 parser.add_argument('searchterm',help=searchtermArgHelp,action='store')
 parser.add_argument('-l', '--limit',     default=10, help=limitArgHelp,type=int, action='store')
-parser.add_argument('-d', '--directory', default='downloads/',help=directoryArgHelp, action='store')
+parser.add_argument('-d', '--directory', default='../reddit_downloads/',help=directoryArgHelp, action='store')
 args = parser.parse_args()
 
 target_posts = reddit.subreddit(args.subreddit).search(args.searchterm, 'top', 'all')
 
 try:
-    url=[ post.url if 'jpg' in post.url for post in target_posts ]
+    url=[post.url if 'jpg' in post.url for post in target_posts]
 
 except prawcore.ResponseException:
     print('An error occurred during authorisation. Please check that'
