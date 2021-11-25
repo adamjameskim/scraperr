@@ -30,8 +30,7 @@ args = parser.parse_args()
 target_posts = reddit.subreddit(args.subreddit).search(args.searchterm, 'top', 'all')
 
 try:
-    url=[post.url if 'jpg' in post.url for post in target_posts]
-
+    url=[post.url for post in target_posts if 'jpg' in post.url]
 except prawcore.ResponseException:
     print('An error occurred during authorisation. Please check that'
           'your Reddit app credentials are set correctly and try again.')
