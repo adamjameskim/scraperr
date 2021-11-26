@@ -1,5 +1,7 @@
 import argparse
 import requests
+import os
+from datetime import datetime
 import re
 import sys
 import praw
@@ -16,19 +18,12 @@ def get_args():
 
     parser = argparse.ArgumentParser()
 
-    subredditArgHelp    = 'The subreddit from which you wish to download the pictures'
-    limitArgHelp        = 'Limit the number of posts to download (default: 10)'
-    periodArgHelp       = "The period from when to download the pictures (default: day) -- options: day, month, year, all"
-    directoryArgHelp    = 'The directory for the pictures to be downloaded into (default: reddit-wallpapers/)'
+    subredditArgHelp    = 'subreddit to search'
     searchtermArgHelp   = 'search term for subreddit'
-
     parser.add_argument('subreddit', help=subredditArgHelp, action='store')
     parser.add_argument('searchterm',help=searchtermArgHelp,action='store')
-    parser.add_argument('-l', '--limit',     default=10, help=limitArgHelp,type=int, action='store')
-    parser.add_argument('-d', '--directory', default='../reddit_downloads/',help=directoryArgHelp, action='store')
-    args = parser.parse_args()
-
-    return args
+    
+    return parser.parse_args()
 
 def get_reddit(args,scope):
     reddit = praw.Reddit(scope)
@@ -55,22 +50,41 @@ def get_reddit(args,scope):
               'the subreddit exists and try again.'.format(args.subreddit))
         sys.exit(-3)
 
-def main():
-    scope = 'funky'
-    args = get_args()
-    urls,titles,upvotes = get_reddit(args,scope)
-    download_urls_requests(urls,titles,upvotes)
+def mk_download_dir(args):
+    outdir = f'downloads _ {datetime.today().strftime("%Y-%m-%d")} _ {args.subreddit} _ {args.searchterm}'
+    os.chdir('.')
+    if os.path.isdir(outdir) == False: os.mkdir(outdir)
+    return outdir
 
 def regexed(x): 
     return re.sub(r'[^a-zA-Z0-9.+-]',' ',x)
 
-def download_urls_requests(urls,titles,upvotes):
+def download_urls_requests(urls,titles,upvotes,outdir):
     for i,url in enumerate(urls):
-        name = f'downloads/{upvotes[i]} - {titles[i]}.jpg'
+        name = f'{outdir}/{upvotes[i]} - {titles[i]}.jpg'
         f=open(name,'wb')
         f.write(requests.get(url).content)
         f.close()
         print(url,name,'written')
+
+    print(len(urls),'files written')
+
+def main():
+   
+    # define scope
+    scope = 'funky'
+
+    # parse args
+    args = get_args()
+    
+    # get urls, titles, upvote
+    urls,titles,upvotes = get_reddit(args,scope)
+    
+    # build output directory
+    outdir = mk_download_dir(args)
+
+    # download images
+    download_urls_requests(urls,titles,upvotes,outdir)
 
 if __name__ == "__main__":
     main()
