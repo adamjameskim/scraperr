@@ -14,17 +14,13 @@ import errno
 
 def get_args():
 
-        reddit = praw.Reddit("funky")
     parser = argparse.ArgumentParser()
 
-    subredditArgHelp = 'The subreddit from which you wish to download the pictures'
-    limitArgHelp = 'Limit the number of posts to download (default: 10)'
-    periodArgHelp = ("The period from when to "
-                     "download the pictures (default: day) -- options: day,"
-                     " month, year, all")
-    directoryArgHelp = ('The directory for the pictures'
-                        'to be downloaded into (default: reddit-wallpapers/)')
-    searchtermArgHelp = 'search term for subreddit'
+    subredditArgHelp    = 'The subreddit from which you wish to download the pictures'
+    limitArgHelp        = 'Limit the number of posts to download (default: 10)'
+    periodArgHelp       = "The period from when to download the pictures (default: day) -- options: day, month, year, all"
+    directoryArgHelp    = 'The directory for the pictures to be downloaded into (default: reddit-wallpapers/)'
+    searchtermArgHelp   = 'search term for subreddit'
 
     parser.add_argument('subreddit', help=subredditArgHelp, action='store')
     parser.add_argument('searchterm',help=searchtermArgHelp,action='store')
@@ -32,9 +28,10 @@ def get_args():
     parser.add_argument('-d', '--directory', default='../reddit_downloads/',help=directoryArgHelp, action='store')
     args = parser.parse_args()
 
-    return args,reddit
+    return args
 
-def get_reddit(args,reddit):
+def get_reddit(args,scope):
+    reddit = praw.Reddit(scope)
     retrieved_posts = reddit.subreddit(args.subreddit).search(args.searchterm, 'top', 'all')
     urls,titles,upvotes=[],[],[]
     try:
@@ -59,9 +56,9 @@ def get_reddit(args,reddit):
         sys.exit(-3)
 
 def main():
-    
-    args,reddit = get_args()
-    urls,titles,upvotes = get_reddit(args,reddit)
+    scope = 'funky'
+    args = get_args()
+    urls,titles,upvotes = get_reddit(args,scope)
     download_urls_requests(urls,titles,upvotes)
 
 def regexed(x): 
