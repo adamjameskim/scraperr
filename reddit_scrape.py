@@ -9,11 +9,12 @@ import subprocess
 import os
 import errno
 
+# http://www.storybench.org/how-to-scrape-reddit-with-python/
+# https://stackoverflow.com/a/3173388
+
 def get_args():
 
-    # Initialize reddit using your credentials:
-    # http://www.storybench.org/how-to-scrape-reddit-with-python/
-    reddit = praw.Reddit("funky")
+        reddit = praw.Reddit("funky")
     parser = argparse.ArgumentParser()
 
     subredditArgHelp = 'The subreddit from which you wish to download the pictures'
@@ -57,19 +58,10 @@ def get_reddit(args,reddit):
               'the subreddit exists and try again.'.format(args.subreddit))
         sys.exit(-3)
 
-    # https://stackoverflow.com/a/3173388
-
 def main():
-    # check if gallery-dl is installed on the system
-
-    '''if shutil.which("gallery-dl") is None:
-        print('gallery-dl not found on system')
-        sys.exit(-4)'''
     
     args,reddit = get_args()
-
     urls,titles,upvotes = get_reddit(args,reddit)
-
     download_urls_requests(urls,titles,upvotes)
 
 def regexed(x): 
@@ -78,39 +70,10 @@ def regexed(x):
 def download_urls_requests(urls,titles,upvotes):
     for i,url in enumerate(urls):
         name = f'downloads/{upvotes[i]} - {titles[i]}.jpg'
-        #f=open(name,'wb')
-        #f.write(requests.get(url).content)
-        #f.close()
+        f=open(name,'wb')
+        f.write(requests.get(url).content)
+        f.close()
         print(url,name,'written')
-
-
-def download_urls_gallerydl():
-    cmd = ["gallery-dl"]
-    cmd.append("--dest")
-    cmd.append(args.directory)
-    cmd.append("--verbose")
-    cmd.append("--write-log")
-    cmd.append(os.path.join(args.directory,
-                            "gallery-dl.log"))
-    cmd.append("--write-unsupported")
-    cmd.append(os.path.join(args.directory,
-                            "gallery-dl-unsupported.log"))
-    cmd.append("-i-")
-
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-    for value in url:
-        try:
-            p.stdin.write((value+'\n').encode())
-        except IOError as e:
-            if e.errno == errno.EPIPE or e.errno == errno.EINVAL:
-                break
-            else:
-                raise
-
-    p.stdin.close()
-    p.wait()
-
-    print(len(url))
 
 if __name__ == "__main__":
     main()
